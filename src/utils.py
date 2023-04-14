@@ -22,18 +22,26 @@ def format_frames(input_frame, output_size=(224, 224)):
     resized_frame = tf.image.resize_with_pad(converted_frame, *output_size)
     return resized_frame
 
+def get_video_duration(video_file_path):
+    data = cv2.VideoCapture(video_file_path)
+    # count the number of frames
+    frames = data.get(cv2.CAP_PROP_FRAME_COUNT)
+    fps = data.get(cv2.CAP_PROP_FPS)
+    
+    # calculate duration of the video
+    seconds = round(frames / fps)
+    return seconds
 
-def extract_frames_from_file(video_file_path, fps):
+def extract_frames_from_file(video_file_path, fps, n_of_frames, count):
     frames = []
     vidcap = cv2.VideoCapture(video_file_path)
-    success, frame = vidcap.read()
-    success = True
-    while success:
-        vidcap.set(cv2.CAP_PROP_POS_MSEC,(len(frames)* np.rint(1000/fps)))    # added this line 
+    for _ in range(0, n_of_frames):
+        vidcap.set(cv2.CAP_PROP_POS_MSEC,((count + len(frames))* np.rint(1000/fps)))    # added this line 
         success, frame = vidcap.read()
-        print('Read frame number ', len(frames) ,' : ', success)
+        #print('Read frame number ', len(frames) ,' : ', success)
         frames.append(frame)
-    return frames
+    count += len(frames)
+    return frames, count
 
 
 def stream_screen(fps, n_of_frames, debug=True):
