@@ -37,14 +37,14 @@ if __name__ == '__main__':
     loop_time = time.time()
 
     debug = False
-    gpu_scheduling = False
+    gpu_scheduling = True
     prediction_modes = {
         0: 'fixed',
         1: 'from_file',
         2: 'screen_streaming'
     }
-    prediction_choice = prediction_modes[1]
-    fixed_predictions = [[1, 0]]
+    prediction_choice = prediction_modes[0]
+    fixed_predictions = [[0, 0]]
     videos_folder = 'C:\\Users\\franc\\PycharmProjects\\videogame-procedural-music\\VA_real_time\\videos\\'
     video_file = 'DarkSouls3Midir.mp4'
     video_file_path = videos_folder + video_file
@@ -113,7 +113,7 @@ if __name__ == '__main__':
 
         print('VA estimation completed...')
 
-        if round(count + n_of_frames)/fps >= video_duration:
+        if prediction_choice == prediction_modes[1] and round(count + n_of_frames)/fps >= video_duration:
             print("video file analysis completed!")
             break
 
