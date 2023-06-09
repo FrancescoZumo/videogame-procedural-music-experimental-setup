@@ -11,16 +11,6 @@ import datetime
 if __name__ == '__main__':
     model_name = '3D_CNN_pat100_lr1e-05'
     model = tf.keras.models.load_model('models/' + model_name + '_checkpoint')
-    # model.summary()
-    # convert model to tensorflowlite
-
-    # Convert the model (TODO not working right now)
-    #converter = tf.lite.TFLiteConverter.from_saved_model('models/' + model_name + '_checkpoint') # path to the SavedModel directory
-    # model = converter.convert()
-
-    # Save the model.
-    #with open('model.tflite', 'wb') as f:
-    #    f.write(tflite_model)
 
     os.environ['TF_CPP_MIN_LOG_LEVEL'] = '2'
 
@@ -37,13 +27,13 @@ if __name__ == '__main__':
     loop_time = time.time()
 
     debug = False
-    gpu_scheduling = True
+    gpu_scheduling = False
     prediction_modes = {
         0: 'fixed',
         1: 'from_file',
         2: 'screen_streaming'
     }
-    prediction_choice = prediction_modes[0]
+    prediction_choice = prediction_modes[1]
     fixed_predictions = [[0, 0]]
     videos_folder = 'C:\\Users\\franc\\PycharmProjects\\videogame-procedural-music\\VA_real_time\\videos\\'
     video_file = 'DarkSouls3Midir.mp4'
