@@ -14,13 +14,13 @@ if __name__ == '__main__':
 
     os.environ['TF_CPP_MIN_LOG_LEVEL'] = '2'
 
-    size = 100
-    x_vec = np.linspace(0,size,size+1)[0:-1]
-    y_valence_vec = np.zeros(len(x_vec))
-    y_arousal_vec = np.zeros(len(x_vec))
-    line1 = []
-    line2 = []
-    va_plot = []
+    #size = 100
+    #x_vec = np.linspace(0,size,size+1)[0:-1]
+    #y_valence_vec = np.zeros(len(x_vec))
+    #y_arousal_vec = np.zeros(len(x_vec))
+    #line1 = []
+    #line2 = []
+    #va_plot = []
 
     current_va_path = 'output\\current_va.csv'
 
@@ -36,7 +36,7 @@ if __name__ == '__main__':
     prediction_choice = prediction_modes[1]
     fixed_predictions = [[0, 0]]
     videos_folder = 'C:\\Users\\franc\\PycharmProjects\\videogame-procedural-music\\VA_real_time\\videos\\'
-    video_file = 'DarkSouls3Midir.mp4'
+    video_file = 'zelda_gameplay.mp4'
     video_file_path = videos_folder + video_file
     count = 0
     fps = 6
@@ -90,13 +90,13 @@ if __name__ == '__main__':
         #lines = live_plot.live_plotter(x_vec, [y_valence_vec, y_arousal_vec], [line1, line2])
         #line1, line2 = lines[0], lines[1] 
         #va_plot = live_plot.va_2d_plot(predictions[0][0], predictions[0][1], va_plot)
-        
-        y_valence_vec = np.append(y_valence_vec[1:],0.0)
-        y_arousal_vec = np.append(y_arousal_vec[1:],0.0)
+        #y_valence_vec = np.append(y_valence_vec[1:],0.0)
+        #y_arousal_vec = np.append(y_arousal_vec[1:],0.0)
 
-        print("Valence: {}, Arousal: {}".format(predictions[-1][0], predictions[-1][1]))
+        print(" - Valence: {}, Arousal: {}".format(predictions[-1][0], predictions[-1][1]))
         print("elapsed time: {} seconds".format(time.time() - loop_time))
 
+        # saving complete prediction history
         pred = pd.DataFrame({'valence': [p[0] for p in predictions], 'arousal': [p[1] for p in predictions]})        
         pred.to_csv('output\\current_va.csv')
         loop_time = time.time()
@@ -106,5 +106,8 @@ if __name__ == '__main__':
         if prediction_choice == prediction_modes[1] and round(count + n_of_frames)/fps >= video_duration:
             print("video file analysis completed!")
             break
-
+    
+    # save final file
+    pred = pd.DataFrame({'valence': [p[0] for p in predictions], 'arousal': [p[1] for p in predictions]})        
+    pred.to_csv('output\\' + video_file[:len(video_file) - 4] +'.csv')
 
