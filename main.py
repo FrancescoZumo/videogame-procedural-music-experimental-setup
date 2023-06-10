@@ -36,15 +36,16 @@ if __name__ == '__main__':
     prediction_choice = prediction_modes[1]
     fixed_predictions = [[0, 0]]
     videos_folder = 'C:\\Users\\franc\\PycharmProjects\\videogame-procedural-music\\VA_real_time\\videos\\'
-    video_file = 'zelda_gameplay.mp4'
-    video_file_path = videos_folder + video_file
+    
+    video_filename = 'zelda'
+    video_filename_path = videos_folder + video_filename + '.mp4'
     count = 0
     fps = 6
     n_of_frames = 6
     predictions = []
 
     if prediction_choice == prediction_modes[1]:
-        video_duration = utils.get_video_duration(video_file_path) 
+        video_duration = utils.get_video_duration(video_filename_path) 
 
     while True:
         print('waiting for music generation...')
@@ -58,8 +59,8 @@ if __name__ == '__main__':
         elif prediction_choice == prediction_modes[1] or prediction_choice == prediction_modes[2]:
             
             if prediction_choice == prediction_modes[1]:
-                print('reading file: ', video_file, ' from second: ', datetime.timedelta(seconds=count/fps), ' for ', n_of_frames/fps, 'seconds')
-                frames, count = utils.extract_frames_from_file(video_file_path, fps, n_of_frames, count)
+                print('reading file: ', video_filename, ' from second: ', datetime.timedelta(seconds=count/fps), ' for ', n_of_frames/fps, 'seconds')
+                frames, count = utils.extract_frames_from_file(video_filename_path, fps, n_of_frames, count)
 
             elif prediction_choice == prediction_modes[2]:
                 # get n frames from screen at desired fps
@@ -109,5 +110,5 @@ if __name__ == '__main__':
     
     # save final file
     pred = pd.DataFrame({'valence': [p[0] for p in predictions], 'arousal': [p[1] for p in predictions]})        
-    pred.to_csv('output\\' + video_file[:len(video_file) - 4] +'.csv')
+    pred.to_csv('output\\' + video_filename +'.csv')
 
