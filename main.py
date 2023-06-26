@@ -6,25 +6,20 @@ import src.live_plot as live_plot
 import src.utils as utils
 import pandas as pd
 import datetime
+import re
 
 
 if __name__ == '__main__':
+    # load model
     model_name = '3D_CNN_pat100_lr1e-05'
     model = tf.keras.models.load_model('models/' + model_name + '_checkpoint')
-
     os.environ['TF_CPP_MIN_LOG_LEVEL'] = '2'
 
-    #size = 100
-    #x_vec = np.linspace(0,size,size+1)[0:-1]
-    #y_valence_vec = np.zeros(len(x_vec))
-    #y_arousal_vec = np.zeros(len(x_vec))
-    #line1 = []
-    #line2 = []
-    #va_plot = []
-
+    # set parameters
     current_va_path = 'output\\current_va.csv'
 
-    loop_time = time.time()
+    videogame_choice = 'no_mans_sky'
+    video_max_duration = np.inf
 
     debug = False
     gpu_scheduling = False
@@ -36,20 +31,28 @@ if __name__ == '__main__':
     prediction_choice = prediction_modes[1]
     fixed_predictions = [[0, 0]]
     videos_folder = 'C:\\Users\\franc\\PycharmProjects\\videogame-procedural-music\\VA_real_time\\videos\\'
-    video_max_duration = 180
-
-    videogame_choice = 'no_mans_sky'
     videos_folder = videos_folder + videogame_choice + '\\'
-
+    
+    # plot for realtime params
+    #size = 100
+    #x_vec = np.linspace(0,size,size+1)[0:-1]
+    #y_valence_vec = np.zeros(len(x_vec))
+    #y_arousal_vec = np.zeros(len(x_vec))
+    #line1 = []
+    #line2 = []
+    #va_plot = []
 
     available_videos = os.listdir(videos_folder)
-
+    loop_time = time.time()
     for video in available_videos:
 
+        '''
+        pattern = re.compile("nc*")
         # skip some videos:
-        if video in []:
+        if pattern.match(video) is not None:
             print('skipping ' + video)
             continue
+        '''
 
         video_filename = video[:len(video)-4]
         video_filename_path = videos_folder + video_filename + '.mp4'
@@ -100,7 +103,8 @@ if __name__ == '__main__':
             else:
                 print("predicion choice not valid! ")
                 break
-
+            
+            # real time plot of predictions
             #y_valence_vec[-1] = predictions[0][0]
             #y_arousal_vec[-1] = predictions[0][1]
             #lines = live_plot.live_plotter(x_vec, [y_valence_vec, y_arousal_vec], [line1, line2])
@@ -115,14 +119,23 @@ if __name__ == '__main__':
             # saving complete prediction history
             pred = pd.DataFrame({'valence': [p[0] for p in predictions], 'arousal': [p[1] for p in predictions]})        
             pred.to_csv('output\\current_va.csv')
-            loop_time = time.time()
+                    
 
             print('VA estimation completed...')
 
-            if round(count + n_of_frames)/fps >= (video_duration - 1):
+            if round(count + n_of_frames)/fps > (video_duration):
                 print("video file analysis completed!")
                 break
         
         # rename final file
-        os.system('move /Y output\\current_va.csv output\\' + video_filename + '.csv')
+        final_path = 'output\\' + video_filename + '.csv'
+        os.system('move /Y output\\current_va.csv ' + final_path)
+
+        # generate correspondent random walk
+        final_csv = pd.read_csv(final_path)
+        rand_walk = utils.generate_random_walk_timeseries(step_n=final_csv.shape[0])
+        rand_walk_df = pd.DataFrame(rand_walk)
+        rand_walk_df.to_csv('output\\' + video_filename + '_rand_walk.csv')
+
+        
 

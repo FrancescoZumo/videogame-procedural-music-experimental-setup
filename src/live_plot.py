@@ -1,22 +1,23 @@
 import matplotlib.pyplot as plt
 import numpy as np
+from scipy.interpolate import interp1d
 
 # use ggplot style for more sophisticated visuals
 plt.style.use('ggplot')
 
-def live_plotter(x_value,y_data,lines,identifier='',pause_time=0.01):
+def live_plotter(x_value,y_data,lines,identifier='',pause_time=0.01, timer=None):
     if lines[0]==[]:
         # this is the call to matplotlib that allows dynamic plotting
         plt.ion()
-        fig = plt.figure(figsize=(7.5,3))
+        fig = plt.figure(figsize=(7.5,0.5))
         ax = fig.add_subplot(111)
         # create a variable for the line so we can later update it
         for i, line in enumerate(lines):
-            lines[i], = ax.plot(x_value,y_data[i],'-',alpha=0.8)        
+            lines[i], = ax.plot(x_value,y_data[i],'-',alpha=0.8, color='#94B3FC')        
         #update plot label/title
         plt.ylabel('values')
-        plt.legend(['valence', 'arousal'], loc='upper left')
-        plt.title('Timeseries: {}'.format(identifier))
+        
+        #plt.title('Timeseries: {}'.format(identifier))
         plt.show()
     for i, line in enumerate(lines):
         # after the figure, axis, and line are created, we only need to update the y-data
