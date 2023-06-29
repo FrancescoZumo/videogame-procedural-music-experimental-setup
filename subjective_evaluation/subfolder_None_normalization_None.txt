@@ -1,0 +1,257 @@
+
+
+test assumption of normality, dimension: valence, category:  a
+DISTANCE
+the null hypothesis can be rejected
+RMSE
+the null hypothesis can be rejected
+PCORR
+the null hypothesis CANNOT be rejected
+0.5702479201520432
+
+ttest PRED vs RAND, dimension: valence, category:  a
+Distance:  Ttest_indResult(statistic=-3.6178766595102516, pvalue=0.0006911962799779942)
+RMSE:  Ttest_indResult(statistic=-4.523220837012383, pvalue=3.7675791981582076e-05)
+PCORR:  Ttest_indResult(statistic=0.9617240101668282, pvalue=0.34081635737234306)
+
+
+test assumption of normality, dimension: valence, category:  b
+DISTANCE
+the null hypothesis can be rejected
+RMSE
+the null hypothesis can be rejected
+PCORR
+the null hypothesis CANNOT be rejected
+0.23241252267224113
+
+ttest PRED vs RAND, dimension: valence, category:  b
+Distance:  Ttest_indResult(statistic=-2.0819126883647363, pvalue=0.04248891415852397)
+RMSE:  Ttest_indResult(statistic=-2.9729744873267596, pvalue=0.0045281604448698665)
+PCORR:  Ttest_indResult(statistic=1.3081702757892142, pvalue=0.19679776709907806)
+
+
+test assumption of normality, dimension: valence, category:  c
+DISTANCE
+the null hypothesis can be rejected
+RMSE
+the null hypothesis can be rejected
+PCORR
+the null hypothesis CANNOT be rejected
+0.2444152838115315
+
+ttest PRED vs RAND, dimension: valence, category:  c
+Distance:  Ttest_indResult(statistic=-2.8730766878622016, pvalue=0.005951480302803867)
+RMSE:  Ttest_indResult(statistic=-4.2904436579422915, pvalue=8.157572561977366e-05)
+PCORR:  Ttest_indResult(statistic=0.7380822176496474, pvalue=0.46391473299098307)
+
+
+test assumption of normality, dimension: valence, category:  d
+DISTANCE
+the null hypothesis can be rejected
+RMSE
+the null hypothesis can be rejected
+PCORR
+the null hypothesis CANNOT be rejected
+0.489633296412991
+
+ttest PRED vs RAND, dimension: valence, category:  d
+Distance:  Ttest_indResult(statistic=-2.439009453431949, pvalue=0.01832015246519045)
+RMSE:  Ttest_indResult(statistic=-3.0885570517579266, pvalue=0.0032796240839661423)
+PCORR:  Ttest_indResult(statistic=-0.5725207449871523, pvalue=0.5696413459804419)
+
+RESULTS: Affective Dimension:  valence
+prediction distances mean:  [26.138946497045627, 28.83939763566125, 22.738361029967738, 25.885116143865904]
+prediction distances SEM:  [3.186070435739035, 7.022747862181794, 2.6598116428058742, 6.793801355366536]
+rand_walk distances mean:  [55.12838636274474, 50.19004142410035, 36.374186183459486, 50.23549670953028]
+rand_walk distances SEM:  [7.3521725144067185, 7.47343534311563, 3.9307237671308273, 7.31565935080002]
+prediction RMSEs mean :  [1.6087354254966504, 1.7823164367028448, 1.4068827736245764, 1.583144913005436]
+prediction RMSEs SEM:  [0.18613902858292353, 0.41463705859946853, 0.1576799069741229, 0.4004985110480142]
+rand_walk RMSEs mean:  [3.642024404332019, 3.5299733609916806, 2.6627134532500936, 3.3791147014373055]
+rand_walk RMSEs SEM:  [0.4091731036656891, 0.41670290221185485, 0.24660245029809263, 0.42158433407540913]
+prediction PCORRs mean :  [0.03661947937468568, 0.030237795020992466, 0.08473816561397757, -0.0008054176897919509]
+prediction PCORRs SEM:  [0.0724867056704795, 0.07604242985666222, 0.09282895018700608, 0.08530733979739416]
+rand_walk PCORRs mean:  [-0.08971788269320914, -0.13003433329450267, -0.014115970640493232, 0.07921521896824724]
+rand_walk PCORRs SEM:  [0.10955625905054195, 0.09606134799765659, 0.09654554147722866, 0.1107159593006816]
+
+now performing ANOVA for dimension: valence among all categories (a,b,c,d)
+
+one-way ANOVA test for Distance:  F_onewayResult(statistic=0.22115675434491078, pvalue=0.8815041092162221)
+one-way ANOVA test for RMSE:  F_onewayResult(statistic=0.24093371935621882, pvalue=0.8675956348475643)
+one-way ANOVA test for PCORR:  F_onewayResult(statistic=0.18492621452061805, pvalue=0.9064245328276)
+
+
+test assumption of normality, dimension: arousal, category:  a
+DISTANCE
+the null hypothesis CANNOT be rejected
+0.07214920861381238
+RMSE
+the null hypothesis CANNOT be rejected
+0.07327236596222936
+PCORR
+the null hypothesis CANNOT be rejected
+0.13810943091588004
+
+ttest PRED vs RAND, dimension: arousal, category:  a
+Distance:  Ttest_indResult(statistic=-1.7204950626327191, pvalue=0.09152651403223196)
+RMSE:  Ttest_indResult(statistic=-2.5170124685462167, pvalue=0.015087625178984576)
+PCORR:  Ttest_indResult(statistic=-0.3142847196681646, pvalue=0.7546124614369301)
+
+
+test assumption of normality, dimension: arousal, category:  b
+DISTANCE
+the null hypothesis CANNOT be rejected
+0.49665274472404153
+RMSE
+the null hypothesis CANNOT be rejected
+0.5803164242189709
+PCORR
+the null hypothesis CANNOT be rejected
+0.9992464977098542
+
+ttest PRED vs RAND, dimension: arousal, category:  b
+Distance:  Ttest_indResult(statistic=-2.498123591859263, pvalue=0.01581902624211241)
+RMSE:  Ttest_indResult(statistic=-3.7512045789577733, pvalue=0.0004583152479226885)
+PCORR:  Ttest_indResult(statistic=0.662226871566215, pvalue=0.5108667839774392)
+
+
+test assumption of normality, dimension: arousal, category:  c
+DISTANCE
+the null hypothesis can be rejected
+RMSE
+the null hypothesis can be rejected
+PCORR
+the null hypothesis CANNOT be rejected
+0.2636112930039306
+
+ttest PRED vs RAND, dimension: arousal, category:  c
+Distance:  Ttest_indResult(statistic=-2.3831447146981173, pvalue=0.021005898155494585)
+RMSE:  Ttest_indResult(statistic=-3.4850579841521956, pvalue=0.0010334466102290712)
+PCORR:  Ttest_indResult(statistic=0.18638340370029297, pvalue=0.8528982670432472)
+
+
+test assumption of normality, dimension: arousal, category:  d
+DISTANCE
+the null hypothesis can be rejected
+RMSE
+the null hypothesis can be rejected
+PCORR
+the null hypothesis CANNOT be rejected
+0.15348855543340348
+
+ttest PRED vs RAND, dimension: arousal, category:  d
+Distance:  Ttest_indResult(statistic=-3.264771125987289, pvalue=0.001980576114942036)
+RMSE:  Ttest_indResult(statistic=-5.042360584942516, pvalue=6.420523825449205e-06)
+PCORR:  Ttest_indResult(statistic=-0.06388169643300577, pvalue=0.9493191401559659)
+
+RESULTS: Affective Dimension:  arousal
+prediction distances mean:  [26.408413795747826, 26.421855224958602, 30.674524672320384, 25.384980566771887]
+prediction distances SEM:  [3.1393026027564863, 2.696097053865527, 4.362914284631815, 3.6475364143827895]
+rand_walk distances mean:  [39.61612234341333, 43.53018287921385, 47.61787849765306, 46.187196986852165]
+rand_walk distances SEM:  [7.005452174750353, 6.295444340773746, 5.6135795287925925, 5.224397454685465]
+prediction RMSEs mean :  [1.6807061632860527, 1.642026689525814, 1.9162360511349001, 1.5998019148560307]
+prediction RMSEs SEM:  [0.19065102511896956, 0.15826082535530736, 0.2610277537827789, 0.21245663233312387]
+rand_walk RMSEs mean:  [2.811603917253324, 3.0760373328089403, 3.3497615714100566, 3.3561181974613694]
+rand_walk RMSEs SEM:  [0.4068465597454045, 0.3479820994309538, 0.3179006193839073, 0.2760138535597959]
+prediction PCORRs mean :  [-0.02656600398783338, -0.014258803176688187, 0.05167623785300689, 0.11489930071443069]
+prediction PCORRs SEM:  [0.07175375175893794, 0.07812269363570014, 0.07911276103584769, 0.08712300678376803]
+rand_walk PCORRs mean:  [0.013034690805244626, -0.09457959742176936, 0.030011152725724206, 0.12294308199026757]
+rand_walk PCORRs SEM:  [0.10357633272343862, 0.09277850678908824, 0.0851631188907702, 0.09091002143529932]
+
+now performing ANOVA for dimension: arousal among all categories (a,b,c,d)
+
+one-way ANOVA test for Distance:  F_onewayResult(statistic=0.4473777566185913, pvalue=0.71969571658605)
+one-way ANOVA test for RMSE:  F_onewayResult(statistic=0.4591963632483156, pvalue=0.7114072233185271)
+one-way ANOVA test for PCORR:  F_onewayResult(statistic=0.6814090029995509, pvalue=0.5654474093444406)
+
+
+
+PERFORMING STATS for Dimensions MERGED
+
+
+test assumption of normality, dimensions merged, category:  0
+DISTANCE
+the null hypothesis can be rejected
+RMSE
+the null hypothesis can be rejected
+PCORR
+the null hypothesis CANNOT be rejected
+0.08803369905869719
+
+ttest PRED vs RAND, dimensions merged , category:  0
+Distance:  Ttest_indResult(statistic=-3.7675682994239117, pvalue=0.00027614565669290925)
+RMSE:  Ttest_indResult(statistic=-4.943770428539894, pvalue=3.018784775120611e-06)
+PCORR:  Ttest_indResult(statistic=0.47914828934017967, pvalue=0.6328587952447016)
+
+test assumption of normality, dimensions merged, category:  1
+DISTANCE
+the null hypothesis can be rejected
+RMSE
+the null hypothesis can be rejected
+PCORR
+the null hypothesis CANNOT be rejected
+0.47663103483380664
+
+ttest PRED vs RAND, dimensions merged , category:  1
+Distance:  Ttest_indResult(statistic=-3.1393745931943777, pvalue=0.0022147203137542907)
+RMSE:  Ttest_indResult(statistic=-4.561614963573045, pvalue=1.4175651930410662e-05)
+PCORR:  Ttest_indResult(statistic=1.4079167854933847, pvalue=0.1621961969214636)
+
+test assumption of normality, dimensions merged, category:  2
+DISTANCE
+the null hypothesis can be rejected
+RMSE
+the null hypothesis can be rejected
+PCORR
+the null hypothesis can be rejected
+
+ttest PRED vs RAND, dimensions merged , category:  2
+Distance:  Ttest_indResult(statistic=-3.522687867659775, pvalue=0.0006406852904344519)
+RMSE:  Ttest_indResult(statistic=-5.232000717532662, pvalue=8.992603830385585e-07)
+PCORR:  Ttest_indResult(statistic=0.685689882272716, pvalue=0.4944642219961345)
+
+test assumption of normality, dimensions merged, category:  3
+DISTANCE
+the null hypothesis can be rejected
+RMSE
+the null hypothesis can be rejected
+PCORR
+the null hypothesis CANNOT be rejected
+0.09716078467334467
+
+ttest PRED vs RAND, dimensions merged , category:  3
+Distance:  Ttest_indResult(statistic=-3.8457453883067574, pvalue=0.00020945652065196312)
+RMSE:  Ttest_indResult(statistic=-5.292726318608013, pvalue=6.935858182949075e-07)
+PCORR:  Ttest_indResult(statistic=-0.46412255785835377, pvalue=0.6435687355428896)
+
+
+RESULTS: Affective Dimensions merged
+prediction distances mean:  [26.27368014639673, 27.63062643030992, 26.70644285114406, 25.635048355318897]
+prediction distances SEM:  [2.2144643659041257, 3.7280342651069915, 2.5900106412745107, 3.817698126602887]
+rand_walk distances mean:  [47.37225435307903, 46.8601121516571, 41.99603234055626, 48.21134684819123]
+rand_walk distances SEM:  [5.143609388148391, 4.86009989388048, 3.482845804963218, 4.4595396511949]
+prediction RMSEs mean :  [1.6447207943913515, 1.7121715631143295, 1.661559412379738, 1.591473413930733]
+prediction RMSEs SEM:  [0.13200856616094828, 0.21993983327745167, 0.15513060321085598, 0.2244505421133045]
+rand_walk RMSEs mean:  [3.226814160792671, 3.3030053469003113, 3.006237512330075, 3.367616449449338]
+rand_walk RMSEs SEM:  [0.29152183335955256, 0.2706446591327984, 0.20491167073089084, 0.24947374752776746]
+prediction PCORRs mean :  [0.005026737693426163, 0.007989495922152137, 0.06820720173349222, 0.05818130149667449]
+prediction PCORRs SEM:  [0.050688329419719874, 0.05406333736612343, 0.06042720619270304, 0.06094292823421661]
+rand_walk PCORRs mean:  [-0.038341595943982246, -0.11230696535813604, 0.007947591042615477, 0.10150785501868899]
+rand_walk PCORRs SEM:  [0.074986587730147, 0.06616374271282269, 0.06381027035371567, 0.07071399234197896]
+
+now performing ANOVA comparing all categories (a,b,c,d), dimensions merged
+
+one-way ANOVA test for Distance:  F_onewayResult(statistic=0.07002417179525217, pvalue=0.9758803326118765)
+
+
+PERFORMING STATS: VALENCE vs AROUSAL, all categories merged
+
+ttest
+Distance:  Ttest_indResult(statistic=-0.419610973984063, pvalue=0.6752069445692855)
+RMSE:  Ttest_indResult(statistic=-0.6143163766166864, pvalue=0.5396841519509373)
+PCORR:  Ttest_indResult(statistic=0.11737183761335424, pvalue=0.9066803138015569)
+
+now performing ANOVA
+
+one-way ANOVA test for DISTANCE:  F_onewayResult(statistic=0.17607336948785274, pvalue=0.6752069445692923)
+one-way ANOVA test for RMSE:  F_onewayResult(statistic=0.37738461057945416, pvalue=0.5396841519509401)
+one-way ANOVA test for PCORR:  F_onewayResult(statistic=0.013776148264735529, pvalue=0.9066803138016317)
