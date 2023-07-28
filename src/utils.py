@@ -13,7 +13,9 @@ import statistics
 from math import sqrt
 from scipy.stats.stats import pearsonr
 import scipy.signal as signal
-from scipy.stats import normaltest
+from scipy.stats import shapiro  
+import itertools
+from scipy.linalg import cholesky
 
 SCREEN_SIZE = tuple(pyautogui.size())
 
@@ -95,23 +97,42 @@ def handler(signum, frame):
     if res == 'y':
         exit(1)
 
-def generate_random_walk_timeseries(step_n):
-    # Define parameters for the walk
-    dims = 1
-    #step_n = 10000
-    step_set = [-1, 0, 1]
-    origin = np.zeros((1,dims))
-    
-    # Simulate steps in 1D
-    step_shape = (step_n,dims)
-    steps = np.random.choice(a=step_set, size=step_shape)
-    path = np.concatenate([origin, steps]).cumsum(0)
-    start = path[:1]
-    stop = path[-1:]
+def generate_random_walk_timeseries(step_n, version=0, rand_seed=0):
+    if version == 0:
+        # Define parameters for the walk
+        dims = 1
+        #step_n = 10000
+        #step_set = [-1, 0, 1]
+        step_set = list(np.arange(-1, 1.01, step=0.01))
+        origin = np.zeros((1,dims))
+        
+        # Simulate steps in 1D
+        step_shape = (step_n,dims)
+        steps = np.random.choice(a=step_set, size=step_shape)
+        path = np.concatenate([origin, steps]).cumsum(0)
+        start = path[:1]
+        stop = path[-1:]
+    elif version == 1:
+        rng = np.random.default_rng(rand_seed)
+
+        D = step_n + 1  # Dimension of random walks
+        sections = 1  # Number of sections
+
+        Sigma_path = rng.standard_normal((D, D))
+        Sigma_path = Sigma_path.T.dot(Sigma_path)  # Construct covariance matrix for alpha
+        L_path = cholesky(Sigma_path, lower=True)  # Obtain its Cholesky decomposition
+        # Gaussian random walks:
+        path = np.cumsum(L_path.dot(rng.standard_normal((D, sections))), axis=1).T
+        #path = np.repeat(path, period, axis=0)
+        path = path[0]
+    elif version == 2:
+        origin = np.zeros((1,1))
+        steps = np.random.normal(loc=0,scale=1,size=(step_n, 1))
+        path = np.concatenate([origin, steps]).cumsum(0)
 
     return path
 
-def process_annotation(name, feat, annotator, subfolder=None):
+def process_annotation(name, feat, annotator, subfolder=None, process=True):
     if subfolder is not None:
         curr_path = "output\\annotations\\"+subfolder+"\\"+name+"_"+feat+"_"+annotator+".csv"
     else:
@@ -120,6 +141,8 @@ def process_annotation(name, feat, annotator, subfolder=None):
         print("file does not esist: \n", curr_path)
         return None
     curr_annotation = pd.read_csv(curr_path)
+    if not process:
+        return curr_annotation.values.tolist()
     print("current annotation number of samples: ", curr_annotation.shape[0])
     # adding intermediate points every 0.2 seconds (annotation time window)
     processed_annotation = pd.DataFrame(columns=['time','current_value','total_value'])
@@ -128,8 +151,17 @@ def process_annotation(name, feat, annotator, subfolder=None):
 
     # generating final dataframe
     for row in curr_annotation.itertuples():
-        if row.time not in time_axis:
-            time_axis.append(row.time)
+        if subfolder is None:
+            curr_t = row.time
+        else:
+            tmp_split = curr_annotation['time'][4].split('.')
+            millis = tmp_split[-1]
+            seconds = tmp_split[-2]
+            seconds = seconds[len(seconds)-2:len(seconds)]
+            curr_t = float(seconds + '.' + millis)
+
+        if curr_t not in time_axis:
+            time_axis.append(curr_t)
     time_axis.sort()
 
     # complete current value column
@@ -150,7 +182,7 @@ def process_annotation(name, feat, annotator, subfolder=None):
     return processed_annotation.values.tolist()
 
 
-def compute_metrics(name, feat, annotator, resampling_frequency, subfolder=None, normalization = None, detrend=False, plot_series=False):
+def compute_metrics(name, feat, annotator, ann_stats, rand_walk_stats, curr_rand_walk, pred_stats, resampling_frequency, rand_walk_length=30, subfolder=None, normalization = None, detrend=False,  threshold_percentile=80, plot_series=False):
     available_normalizations = [None, 'minmax', 'zscore']
     if normalization not in available_normalizations:
         print("normalization choice not valid: ", normalization, " is not in ", available_normalizations)
@@ -167,43 +199,58 @@ def compute_metrics(name, feat, annotator, resampling_frequency, subfolder=None,
         curr_path = "output\\annotations\\"+subfolder+"\\"+name+"_"+feat+"_"+annotator+".csv"
         curr_annotation_df = pd.read_csv(curr_path)
         curr_annotation_df = curr_annotation_df.rename(columns={'mean_timeseries': 'total_value'})
-
-    if normaltest(curr_annotation_df['total_value'])[1] > 0.05:
-        print("this file is not normal")
     
     if curr_annotation_df['total_value'].std() != 0 and normalization is not None:
         if normalization == 'zscore':
             # z-score normalization
-            curr_annotation_df['total_value'] = (curr_annotation_df['total_value'] - curr_annotation_df['total_value'].mean()) / curr_annotation_df['total_value'].std()
+            curr_annotation_df['total_value'] = (curr_annotation_df['total_value'] - ann_stats['mean'][0]) / ann_stats['std'][0]
         elif normalization == 'minmax':
             # min max normalization (range 0-1)
-            curr_annotation_df['total_value'] = (curr_annotation_df['total_value'] - curr_annotation_df['total_value'].min())/(curr_annotation_df['total_value'].max() - curr_annotation_df['total_value'].min())
+            curr_annotation_df['total_value'] = \
+                (curr_annotation_df['total_value'] - ann_stats['min'][0])/(ann_stats['max'][0] - ann_stats['min'][0])\
+                      * (pred_stats['max'][0] - pred_stats['min'][0]) + pred_stats['min'][0]
     if detrend:
         curr_annotation_df['total_value'] = signal.detrend(curr_annotation_df['total_value'].to_list())
-
+    
+    
+    
     curr_prediction_df = pd.read_csv("output\\"+name+".csv", names=['time', 'valence', 'arousal'], header=None)
     curr_prediction_df = curr_prediction_df.tail(-1)
     curr_prediction_df = curr_prediction_df.astype('float64')
-
+    curr_prediction_df = curr_prediction_df.reset_index()
+    curr_prediction_df = curr_prediction_df.drop('index', axis=1)
+    # ROUND to first decimal
+    #curr_prediction_df[feat] = curr_prediction_df[feat].round(1)
+    
+    # test to imitate the proprocessing for music generation
+    #curr_prediction_df = va_prediction_processing(curr_prediction_df, threshold_percentile)
+    
+    
     if normalization == 'zscore':
         # z-score normalization
-        curr_prediction_df[feat] = (curr_prediction_df[feat] - curr_prediction_df[feat].mean()) / curr_prediction_df[feat].std()
+        curr_prediction_df[feat] = (curr_prediction_df[feat] - pred_stats['mean'][0]) / pred_stats['std'][0]
     elif normalization == 'minmax':
         # min max normalization (range 0-1)
-        curr_prediction_df[feat] = (curr_prediction_df[feat] - curr_prediction_df[feat].min()) / (curr_prediction_df[feat].max() - curr_prediction_df[feat].min())
+        curr_prediction_df[feat] = (curr_prediction_df[feat] - pred_stats['min'][0]) / (pred_stats['max'][0] - pred_stats['min'][0]) \
+        * (pred_stats['max'][0] - pred_stats['min'][0]) + pred_stats['min'][0]
     if detrend:
         curr_prediction_df[feat] = signal.detrend(curr_prediction_df[feat].to_list())
+    
 
-    curr_rand_walk = generate_random_walk_timeseries(step_n=curr_prediction_df.shape[0])
     curr_rand_walk_df = pd.DataFrame(curr_rand_walk, columns=['total_value'])
+
     if normalization == 'zscore':
         # z-score normalization
-        curr_rand_walk_df['total_value'] = (curr_rand_walk_df['total_value'] - curr_rand_walk_df['total_value'].mean()) / curr_rand_walk_df['total_value'].std()
+        curr_rand_walk_df['total_value'] = (curr_rand_walk_df['total_value'] - rand_walk_stats['mean'][0]) / rand_walk_stats['std'][0]
     elif normalization == 'minmax':
         # min max normalization (range 0-1)
-        curr_rand_walk_df['total_value'] = (curr_rand_walk_df['total_value'] - curr_rand_walk_df['total_value'].min()) / (curr_rand_walk_df['total_value'].max() - curr_rand_walk_df['total_value'].min())
+        curr_rand_walk_df['total_value'] = \
+            (curr_rand_walk_df['total_value'] - rand_walk_stats['min'][0]) /(rand_walk_stats['max'][0] - rand_walk_stats['min'][0]) \
+            * (pred_stats['max'][0] - pred_stats['min'][0]) + pred_stats['min'][0]
     if detrend:
         curr_rand_walk_df['total_value'] = signal.detrend(curr_rand_walk_df['total_value'].to_list())
+
+
 
     # resample to common resampling_frequency for comparison
 
@@ -225,8 +272,7 @@ def compute_metrics(name, feat, annotator, resampling_frequency, subfolder=None,
         x = curr_prediction_df.index.freq
         curr_annotation_df.index.freq = x
 
-
-    curr_rand_walk_df['time'] = pd.to_timedelta(range(0, 31),'s')
+    curr_rand_walk_df['time'] = pd.to_timedelta(np.arange(0, 30 + 30/rand_walk_length, 30/rand_walk_length),'s')
     curr_rand_walk_df = curr_rand_walk_df.set_index(curr_rand_walk_df['time'])['total_value'].resample(resampling_frequency).ffill()
 
     
@@ -341,3 +387,127 @@ def generate_mean_annotations(annotation_files, output_dir, resampling_frequency
         annotations_for_curr_video = []
         annotations_for_curr_video.append(file)
         curr_pattern = name + feat
+
+def va_prediction_processing(va_dataframe, threshold_percentile):
+
+    #TODO: verifica se funziona dataframe importato correttamente
+
+    #TODO: converti in serie binaria così è più confrontabile con le altre
+
+    # get abs(incremental ratio)
+    inc_ratio_val = []
+    inc_ratio_ar = []
+    for index, row in va_dataframe.iterrows():
+        if index == 0:
+            previous_val = row['valence']
+            previous_ar = row['arousal']
+            inc_ratio_val.append(np.nan)
+            inc_ratio_ar.append(np.nan)
+            continue
+        inc_ratio_val.append((row['valence'] - previous_val)/2)
+        inc_ratio_ar.append((row['arousal'] - previous_ar)/2)
+        previous_val = row['valence']
+        previous_ar = row['arousal']
+    if not len(inc_ratio_val) == len(va_dataframe):
+        print('fix bug here please')
+        quit()
+    va_dataframe['inc_ratio_val'] = inc_ratio_val
+    va_dataframe['inc_ratio_ar'] = inc_ratio_ar
+    va_dataframe['abs_inc_ratio_val'] = np.abs(inc_ratio_val)
+    va_dataframe['abs_inc_ratio_ar'] = np.abs(inc_ratio_ar)
+
+    # setting threshold:
+    threshold_abs_inc_ratio_val = np.nanpercentile(va_dataframe['abs_inc_ratio_val'], threshold_percentile)
+    threshold_abs_inc_ratio_ar = np.nanpercentile(va_dataframe['abs_inc_ratio_ar'], threshold_percentile)
+
+    va_dataframe['valence_bin'] = va_dataframe['abs_inc_ratio_val'].gt(threshold_abs_inc_ratio_val).astype(int)
+    va_dataframe['arousal_bin'] = va_dataframe['abs_inc_ratio_ar'].gt(threshold_abs_inc_ratio_ar).astype(int)
+
+    for row in range(va_dataframe.shape[0]):
+        if va_dataframe.at[row, "valence_bin"] == 1 and va_dataframe.at[row, "inc_ratio_val"] < 0:
+            va_dataframe.at[row, "valence_bin"] = -1
+        if va_dataframe.at[row, "arousal_bin"] == 1 and va_dataframe.at[row, "inc_ratio_ar"] < 0:
+            va_dataframe.at[row, "arousal_bin"] = -1
+    
+    va_dataframe['valence'] = va_dataframe['valence_bin']
+    va_dataframe['arousal'] = va_dataframe['arousal_bin']
+    va_dataframe = va_dataframe.drop(['inc_ratio_val', 'inc_ratio_ar', 'abs_inc_ratio_val', 'abs_inc_ratio_ar', 'valence_bin', 'arousal_bin'], axis=1)
+
+    # generate total value from current value -1 or +1
+
+    feats = ['valence', 'arousal']
+    prev_val = 0
+    for feat in feats:
+        for idx in range(va_dataframe.shape[0]):
+            va_dataframe.at[idx, feat] = prev_val + va_dataframe.at[idx, feat]
+            prev_val = va_dataframe.at[idx, feat]
+
+    return va_dataframe
+
+
+def get_annotations_stats(files_to_use, chosen_feature=None, subfolder=None):
+    global_matrix = []
+    stats = pd.DataFrame()
+    for file in files_to_use:
+        if file[-4:len(file)] != '.csv':
+            continue
+        [name, feat, annotator] = file.split('_')
+
+        if feat != chosen_feature and chosen_feature is not None:
+            continue 
+
+        annotator = annotator[0:len(annotator)-4]
+        curr_annotation_list = process_annotation(name, feat, annotator, subfolder, process=True)
+        curr_annotation_df = pd.DataFrame(curr_annotation_list, columns=['time','current_value','total_value'])
+        global_matrix.append(curr_annotation_df['total_value'].to_list())
+
+    stats.at[0, 'min'] = np.min([np.min(global_matrix[i]) for i in range(len(global_matrix))])
+    stats.at[0, 'max'] = np.max([np.max(global_matrix[i]) for i in range(len(global_matrix))])
+    stats.at[0, 'std'] = np.std(list(itertools.chain.from_iterable(global_matrix)))
+    stats.at[0, 'mean'] = np.mean([np.mean(global_matrix[i]) for i in range(len(global_matrix))])
+    stats.at[0, 'normal_test'] = shapiro(list(itertools.chain.from_iterable(global_matrix)))[1]
+    return stats
+
+def get_rand_walk_stats(n_gen, step_n, algorithm_version, rand_seed):
+    global_matrix = []
+    stats = pd.DataFrame()
+
+    np.random.seed(rand_seed)
+    multiple_seeds = np.random.randint(10000, size=n_gen)
+
+
+    for i in range(n_gen):
+        path = generate_random_walk_timeseries(step_n, version=algorithm_version, rand_seed=multiple_seeds[i])
+        global_matrix.append(path)
+    
+    stats.at[0, 'min'] = np.min([np.min(global_matrix[i]) for i in range(len(global_matrix))])
+    stats.at[0, 'max'] = np.max([np.max(global_matrix[i]) for i in range(len(global_matrix))])
+    stats.at[0, 'std'] = np.std(list(itertools.chain.from_iterable(global_matrix)))
+    stats.at[0, 'mean'] = np.mean([np.mean(global_matrix[i]) for i in range(len(global_matrix))])
+    stats.at[0, 'normal_test'] = shapiro(list(itertools.chain.from_iterable(global_matrix)))[1]
+    return stats, global_matrix
+
+def get_pred_stats(feats):
+    global_matrix = []
+    stats = pd.DataFrame()
+
+    files = os.listdir('output')
+
+    for file in files:
+        if file[-4:len(file)] != '.csv':
+            continue
+        if (len(file.split('_'))) > 1:
+            continue
+        curr_prediction_df = pd.read_csv("output\\"+file, names=['time', 'valence', 'arousal'], header=None)
+        curr_prediction_df = curr_prediction_df.tail(-1)
+        curr_prediction_df = curr_prediction_df.astype('float64')
+        for feat in feats:
+            global_matrix.append(curr_prediction_df[feat].to_list())
+
+    stats.at[0, 'min'] = np.min([np.min(global_matrix[i]) for i in range(len(global_matrix))])
+    stats.at[0, 'max'] = np.max([np.max(global_matrix[i]) for i in range(len(global_matrix))])
+    stats.at[0, 'std'] = np.std(list(itertools.chain.from_iterable(global_matrix)))
+    stats.at[0, 'mean'] = np.mean([np.mean(global_matrix[i]) for i in range(len(global_matrix))])
+    stats.at[0, 'normal_test'] = shapiro(list(itertools.chain.from_iterable(global_matrix)))[1]
+
+    return stats

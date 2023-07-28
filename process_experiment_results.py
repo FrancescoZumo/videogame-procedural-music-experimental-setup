@@ -17,7 +17,7 @@ import itertools
 
 # PART 1: Process questionnaire results
 questionnaire_df = pd.read_csv('subjective_evaluation\\questionnaire_results.csv')
-
+n_participants = questionnaire_df.shape[0]
 print("generating questionnaire results")
 
 questions = [
@@ -27,7 +27,7 @@ questions = [
     'Preference'
 ]
 possible_answers = ['a', 'b', 'c', 'd']
-question_results= pd.DataFrame(columns=["question", "answer"])
+question_results= pd.DataFrame(columns=["Question", "answer"])
 
 for q_index, question in enumerate(questions):
 
@@ -49,24 +49,21 @@ for q_index, question in enumerate(questions):
 
     for index, answer in enumerate(possible_answers):
         for i in range(curr_q__results[index]):
-            new_row = pd.DataFrame({"question": [question], "answer": [answer]})
+            new_row = pd.DataFrame({"Question": [question], "answer": [answer]})
             question_results = pd.concat([new_row,question_results.loc[:]]).reset_index(drop=True)
 
-question_results['question'] = pd.Categorical(question_results['question'], questions)
+question_results['Question'] = pd.Categorical(question_results['Question'], questions)
 question_results = question_results.sort_values(by='answer', ascending=True)
-with pd.option_context('display.max_rows', None,
-                       'display.max_columns', None,
-                       'display.precision', 3,
-                       ):
-    print(question_results)
+
 question_results['answer'] = question_results['answer'].replace({'a':'Conditioned', 'b':'Unconditioned','c':'Original', 'd':'None'})
-sns.set(font_scale=1.7)
+sns.set(font_scale=1.8)
 #sns.set(font="Times new roman")
 sns.set_style("whitegrid")
-fig, ax = plt.subplots(figsize=(13, 7))
-sns.histplot(data=question_results, x="question", hue="answer", multiple="dodge", shrink=.4, ax=ax)
-ax.axes.set_title("Questionnaire Results",fontsize=20)
-sns.move_legend(ax, "upper left",  bbox_to_anchor=(0.8, 1.1))
+fig, ax = plt.subplots(figsize=(13, 7.5))
+sns.histplot(data=question_results, x="Question", hue="answer", multiple="dodge", shrink=.4, ax=ax)
+#ax.axes.set_title("Questionnaire Results",fontsize=20)
+ax.yaxis.set_ticks(np.arange(0, n_participants, n_participants/4), ['0%', '25%', '50%', '75%'])
+sns.move_legend(ax, "upper left",  bbox_to_anchor=(0.7, 1))
 
 #plt.show()
 fig.savefig("subjective_evaluation\\questionnaire_hist.pdf") 
@@ -76,11 +73,18 @@ plt.clf()
 print("analyzing timeseries")
 
 resampling_frequency = '100ms'
-normalization = 'minmax'
+normalization = 'zscore'
 detrend = False
 plot_series = False
 subfolder = None
-output_stats_file = "subjective_evaluation\\subfolder_" + str(subfolder)+"_normalization_"+str(normalization)+ "_corr_ABS.txt"
+filter_files = True
+threshold_percentile = 80
+rand_walk_length = 30
+n_rand_walk_gen = 273
+rand_walk_version = 2
+rand_seed = 40  # currently keeping seed 40
+
+output_stats_file = "subjective_evaluation\\subfolder_" + str(subfolder)+"_normalization_"+str(normalization)+ "_rseed_"+str(rand_seed)+"_RWversion_" +str(rand_walk_version)+ ".txt"
 output_plot_filenames = output_stats_file[22:len(output_stats_file)-4]
 print("redirecting output stats to output file: ", output_stats_file)
 
@@ -107,6 +111,38 @@ if subfolder is not None:
 else:
     files_to_use = os.listdir('output\\annotations')
 
+
+files_to_use_filtered = []
+for file in files_to_use:
+
+    if file[-4:len(file)] != '.csv':
+        continue
+
+    if subfolder is not None:
+        df = pd.read_csv('output\\annotations' + '\\' + subfolder + '\\' + file)
+    else:
+        df = pd.read_csv('output\\annotations' + '\\'+ file)
+
+    # remove files with only zeros
+    if df['current_value'].std() == 0 and df['current_value'].mean() == 0:
+        print("skipping file with values: ", df['current_value'])
+    else:
+        files_to_use_filtered.append(file)
+        
+if filter_files:
+    print("using only: ", len(files_to_use_filtered), "files ")
+else:
+    files_to_use_filtered = files_to_use
+
+ann_stats = utils.get_annotations_stats(files_to_use_filtered, subfolder = subfolder)
+print("annptation stats: \n", ann_stats)
+rand_walk_stats, rand_walk_matrix = utils.get_rand_walk_stats(n_rand_walk_gen, rand_walk_length, rand_walk_version, rand_seed)
+print("rand walk stats: \n", rand_walk_stats)
+pred_stats = utils.get_pred_stats(['valence', 'arousal'])
+#pred_stats_val = utils.get_pred_stats(['valence'])
+#pred_stats_aro = utils.get_pred_stats(['arousal'])
+print("prediction stats: \n", pred_stats)
+
 all_pred_distances_byfeat = []
 all_pred_RMSEs_byfeat = []
 all_pred_PCORRs_byfeat = []
@@ -115,7 +151,7 @@ all_rand_RMSEs_byfeat = []
 all_rand_PCORRs_byfeat = []
 
 
-for chosen_feature in available_features:
+for i_feat, chosen_feature in enumerate(available_features):
 
     all_pred_distances = [[],[],[],[]]
     all_rand_distances = [[],[],[],[]]
@@ -135,10 +171,8 @@ for chosen_feature in available_features:
     rand_RMSEs_SEM = []
     pred_PCORRs_SEM = []
     rand_PCORRs_SEM = []
-
-    bad_pvalue_files = []
     
-    for file in files_to_use:
+    for i, file in enumerate(files_to_use_filtered):
 
         if file[-4:len(file)] != '.csv':
             continue
@@ -149,13 +183,19 @@ for chosen_feature in available_features:
 
         annotator = annotator[0:len(annotator)-4]
         curr_category = name[1]
+
+        chosen_rand_walk = rand_walk_matrix[i]
+
         print("current file: ", file, " category: ", curr_category)
-        distances, RMSEs, PCORRs = utils.compute_metrics(name, feat, annotator, resampling_frequency, subfolder=subfolder, normalization=normalization, detrend=detrend, plot_series=plot_series)
+        distances, RMSEs, PCORRs = utils.compute_metrics(name, feat, annotator, ann_stats, rand_walk_stats, chosen_rand_walk,
+                                                         pred_stats, resampling_frequency, rand_walk_length=rand_walk_length,
+                                                         subfolder=subfolder, normalization=normalization, detrend=detrend, 
+                                                         threshold_percentile=threshold_percentile, plot_series=plot_series)
 
 
-        print("distance pred vs annotation: ", distances[0], "\ndistance pred vs rand walk: ", distances[1])
-        print("RMSE pred vs annotation: ", RMSEs[0], "\nRMSE pred vs rand walk: ", RMSEs[1])
-        print("PCORR pred vs annotation: ", PCORRs[0], "\nPCORR pred vs rand walk: ", PCORRs[1], "\n")
+        print("distance pred vs annotation: ", distances[0], "\ndistance rand walk vs annotation: ", distances[1])
+        print("RMSE pred vs annotation: ", RMSEs[0], "\nRMSE rand walk vs annotation: ", RMSEs[1])
+        print("PCORR pred vs annotation: ", PCORRs[0], "\nPCORR rand walk vs annotation: ", PCORRs[1], "\n")
         
             
         all_pred_distances[categories[curr_category]].append(distances[0])
@@ -217,9 +257,9 @@ for chosen_feature in available_features:
                     print(pvalue) 
                 
                 print("\nttest PRED vs RAND, dimension: "+chosen_feature+", category: ", curr_category)
-                print('Distance: ', ttest_ind(all_pred_distances[categories[curr_category]], all_rand_distances[categories[curr_category]]))
-                print('RMSE: ', ttest_ind(all_pred_RMSEs[categories[curr_category]], all_rand_RMSEs[categories[curr_category]]))
-                print('PCORR: ', ttest_ind(all_pred_PCORRs[categories[curr_category]], all_rand_PCORRs[categories[curr_category]]))
+                print('Distance: ', ttest_ind(all_pred_distances[categories[curr_category]], all_rand_distances[categories[curr_category]], equal_var=False))
+                print('RMSE: ', ttest_ind(all_pred_RMSEs[categories[curr_category]], all_rand_RMSEs[categories[curr_category]], equal_var=False))
+                print('PCORR: ', ttest_ind(all_pred_PCORRs[categories[curr_category]], all_rand_PCORRs[categories[curr_category]], equal_var=False))
 
 
     with open(output_stats_file, 'r') as f:
@@ -228,18 +268,18 @@ for chosen_feature in available_features:
         with redirect_stdout(f):
             print(log)
             print('RESULTS: Affective Dimension: ', chosen_feature)
-            print('prediction distances mean: ', pred_distances_mean)
-            print('prediction distances SEM: ', pred_distances_SEM)
-            print('rand_walk distances mean: ', rand_distances_mean)
-            print('rand_walk distances SEM: ', rand_distances_SEM)
-            print('prediction RMSEs mean : ', pred_RMSEs_mean)
-            print('prediction RMSEs SEM: ', pred_RMSEs_SEM)
-            print('rand_walk RMSEs mean: ', rand_RMSEs_mean)
-            print('rand_walk RMSEs SEM: ', rand_RMSEs_SEM)
-            print('prediction PCORRs mean : ', pred_PCORRs_mean)
-            print('prediction PCORRs SEM: ', pred_PCORRs_SEM)
-            print('rand_walk PCORRs mean: ', rand_PCORRs_mean)
-            print('rand_walk PCORRs SEM: ', rand_PCORRs_SEM)
+            print('prediction distances mean: ', ' & '.join(str(round(x, 3)) for x in pred_distances_mean))
+            print('prediction distances SEM: ', ' & '.join(str(round(x, 3)) for x in pred_distances_SEM))
+            print('rand_walk distances mean: ', ' & '.join(str(round(x, 3)) for x in rand_distances_mean))
+            print('rand_walk distances SEM: ', ' & '.join(str(round(x, 3)) for x in rand_distances_SEM))
+            print('prediction RMSEs mean : ', ' & '.join(str(round(x, 3)) for x in pred_RMSEs_mean))
+            print('prediction RMSEs SEM: ', ' & '.join(str(round(x, 3)) for x in pred_RMSEs_SEM))
+            print('rand_walk RMSEs mean: ', ' & '.join(str(round(x, 3)) for x in rand_RMSEs_mean))
+            print('rand_walk RMSEs SEM: ', ' & '.join(str(round(x, 3)) for x in rand_RMSEs_SEM))
+            print('prediction PCORRs mean : ', ' & '.join(str(round(x, 3)) for x in pred_PCORRs_mean))
+            print('prediction PCORRs SEM: ', ' & '.join(str(round(x, 3)) for x in pred_PCORRs_SEM))
+            print('rand_walk PCORRs mean: ', ' & '.join(str(round(x, 3)) for x in rand_PCORRs_mean))
+            print('rand_walk PCORRs SEM: ', ' & '.join(str(round(x, 3)) for x in rand_PCORRs_SEM))
             # ANOVA
             print("\nnow performing ANOVA for dimension: "+chosen_feature+" among all categories (a,b,c,d)\n")
             anova = f_oneway(all_pred_distances[0],all_pred_distances[1],all_pred_distances[2],all_pred_distances[3])
@@ -248,7 +288,7 @@ for chosen_feature in available_features:
                 #create DataFrame to hold data
                 df = pd.DataFrame({
                     'score': all_pred_distances[0] + all_pred_distances[1] + all_pred_distances[2] + all_pred_distances[3],
-                    'group': np.array(['a'] * len(all_pred_distances[0]) + ['b'] * len(all_pred_distances[1]), 
+                    'group': np.array(['a'] * len(all_pred_distances[0]) + ['b'] * len(all_pred_distances[1]) + 
                                     ['c'] * len(all_pred_distances[2]) + ['d'] * len(all_pred_distances[3]))
                     }) 
                 # perform Tukey's test
@@ -264,7 +304,7 @@ for chosen_feature in available_features:
                 #create DataFrame to hold data
                 df = pd.DataFrame({
                     'score': all_pred_RMSEs[0] + all_pred_RMSEs[1] + all_pred_RMSEs[2] + all_pred_RMSEs[3],
-                    'group': np.array(['a'] * len(all_pred_RMSEs[0]) + ['b'] * len(all_pred_RMSEs[1]), 
+                    'group': np.array(['a'] * len(all_pred_RMSEs[0]) + ['b'] * len(all_pred_RMSEs[1]) +
                                     ['c'] * len(all_pred_RMSEs[2]) + ['d'] * len(all_pred_RMSEs[3]))
                     }) 
                 # perform Tukey's test
@@ -280,7 +320,7 @@ for chosen_feature in available_features:
                 #create DataFrame to hold data
                 df = pd.DataFrame({
                     'score': all_pred_PCORRs[0] + all_pred_PCORRs[1] + all_pred_PCORRs[2] + all_pred_PCORRs[3],
-                    'group': np.array(['a'] * len(all_pred_PCORRs[0]) + ['b'] * len(all_pred_PCORRs[1]), 
+                    'group': np.array(['a'] * len(all_pred_PCORRs[0]) + ['b'] * len(all_pred_PCORRs[1]) +
                                     ['c'] * len(all_pred_PCORRs[2]) + ['d'] * len(all_pred_PCORRs[3]))
                     }) 
                 # perform Tukey's test
@@ -407,18 +447,18 @@ with open(output_stats_file, 'w') as f:
 
 
         print('\n\nRESULTS: Affective Dimensions merged')
-        print('prediction distances mean: ', pred_distances_mean)
-        print('prediction distances SEM: ', pred_distances_SEM)
-        print('rand_walk distances mean: ', rand_distances_mean)
-        print('rand_walk distances SEM: ', rand_distances_SEM)
-        print('prediction RMSEs mean : ', pred_RMSEs_mean)
-        print('prediction RMSEs SEM: ', pred_RMSEs_SEM)
-        print('rand_walk RMSEs mean: ', rand_RMSEs_mean)
-        print('rand_walk RMSEs SEM: ', rand_RMSEs_SEM)
-        print('prediction PCORRs mean : ', pred_PCORRs_mean)
-        print('prediction PCORRs SEM: ', pred_PCORRs_SEM)
-        print('rand_walk PCORRs mean: ', rand_PCORRs_mean)
-        print('rand_walk PCORRs SEM: ', rand_PCORRs_SEM)
+        print('prediction distances mean: ', ' & '.join(str(round(x, 3)) for x in pred_distances_mean))
+        print('prediction distances SEM: ', ' & '.join(str(round(x, 3)) for x in pred_distances_SEM))
+        print('rand_walk distances mean: ', ' & '.join(str(round(x, 3)) for x in rand_distances_mean))
+        print('rand_walk distances SEM: ', ' & '.join(str(round(x, 3)) for x in rand_distances_SEM))
+        print('prediction RMSEs mean : ', ' & '.join(str(round(x, 3)) for x in pred_RMSEs_mean))
+        print('prediction RMSEs SEM: ', ' & '.join(str(round(x, 3)) for x in pred_RMSEs_SEM))
+        print('rand_walk RMSEs mean: ', ' & '.join(str(round(x, 3)) for x in rand_RMSEs_mean))
+        print('rand_walk RMSEs SEM: ', ' & '.join(str(round(x, 3)) for x in rand_RMSEs_SEM))
+        print('prediction PCORRs mean : ', ' & '.join(str(round(x, 3)) for x in pred_PCORRs_mean))
+        print('prediction PCORRs SEM: ', ' & '.join(str(round(x, 3)) for x in pred_PCORRs_SEM))
+        print('rand_walk PCORRs mean: ', ' & '.join(str(round(x, 3)) for x in rand_PCORRs_mean))
+        print('rand_walk PCORRs SEM: ', ' & '.join(str(round(x, 3)) for x in rand_PCORRs_SEM))
         # ANOVA
         print("\nnow performing ANOVA comparing all categories (a,b,c,d), dimensions merged\n")
         anova = f_oneway(all_pred_distances_byfeat[0][0] + all_pred_distances_byfeat[1][0],
@@ -426,21 +466,81 @@ with open(output_stats_file, 'w') as f:
                          all_pred_distances_byfeat[0][2] + all_pred_distances_byfeat[1][2],
                          all_pred_distances_byfeat[0][3] + all_pred_distances_byfeat[1][3]
                          )
-        print('one-way ANOVA test for RMSE: ', anova)
+        print('one-way ANOVA test for Distance: ', anova)
+        if anova[1] <= 0.05:
+            #create DataFrame to hold data
+            df = pd.DataFrame({
+                'score': all_pred_distances_byfeat[0][0] + all_pred_distances_byfeat[1][0]+
+                         all_pred_distances_byfeat[0][1] + all_pred_distances_byfeat[1][1]+
+                         all_pred_distances_byfeat[0][2] + all_pred_distances_byfeat[1][2]+
+                         all_pred_distances_byfeat[0][3] + all_pred_distances_byfeat[1][3]
+                         ,
+                'group': np.array(['a'] * len(all_pred_distances_byfeat[0][0] + all_pred_distances_byfeat[1][0]) + 
+                                  ['b'] * len(all_pred_distances_byfeat[0][1] + all_pred_distances_byfeat[1][1]) +
+                                  ['c'] * len(all_pred_distances_byfeat[0][2] + all_pred_distances_byfeat[1][2]) + 
+                                  ['d'] * len(all_pred_distances_byfeat[0][3] + all_pred_distances_byfeat[1][3])
+                                  )
+                }) 
+            # perform Tukey's test
+            tukey = pairwise_tukeyhsd(endog=df['score'],
+                                    groups=df['group'],
+                                    alpha=0.05)
+            #display results
+            print(tukey)
         anova = f_oneway(all_pred_RMSEs_byfeat[0][0] + all_pred_RMSEs_byfeat[1][0],
                          all_pred_RMSEs_byfeat[0][1] + all_pred_RMSEs_byfeat[1][1],
                          all_pred_RMSEs_byfeat[0][2] + all_pred_RMSEs_byfeat[1][2],
                          all_pred_RMSEs_byfeat[0][3] + all_pred_RMSEs_byfeat[1][3]
                          )
         print('one-way ANOVA test for RMSE: ', anova)
+        if anova[1] <= 0.05:
+            #create DataFrame to hold data
+            df = pd.DataFrame({
+                'score': all_pred_RMSEs_byfeat[0][0] + all_pred_RMSEs_byfeat[1][0]+
+                         all_pred_RMSEs_byfeat[0][1] + all_pred_RMSEs_byfeat[1][1]+
+                         all_pred_RMSEs_byfeat[0][2] + all_pred_RMSEs_byfeat[1][2]+
+                         all_pred_RMSEs_byfeat[0][3] + all_pred_RMSEs_byfeat[1][3]
+                         ,
+                'group': np.array(['a'] * len(all_pred_RMSEs_byfeat[0][0] + all_pred_RMSEs_byfeat[1][0]) + 
+                                  ['b'] * len(all_pred_RMSEs_byfeat[0][1] + all_pred_RMSEs_byfeat[1][1]) +
+                                  ['c'] * len(all_pred_RMSEs_byfeat[0][2] + all_pred_RMSEs_byfeat[1][2]) + 
+                                  ['d'] * len(all_pred_RMSEs_byfeat[0][3] + all_pred_RMSEs_byfeat[1][3])
+                                  )
+                }) 
+            # perform Tukey's test
+            tukey = pairwise_tukeyhsd(endog=df['score'],
+                                    groups=df['group'],
+                                    alpha=0.05)
+            #display results
+            print(tukey)
         anova = f_oneway(all_pred_PCORRs_byfeat[0][0] + all_pred_PCORRs_byfeat[1][0],
                          all_pred_PCORRs_byfeat[0][1] + all_pred_PCORRs_byfeat[1][1],
                          all_pred_PCORRs_byfeat[0][2] + all_pred_PCORRs_byfeat[1][2],
                          all_pred_PCORRs_byfeat[0][3] + all_pred_PCORRs_byfeat[1][3]
                          )
-        print('one-way ANOVA test for Distance: ', anova)
+        print('one-way ANOVA test for PCORR: ', anova)
+        if anova[1] <= 0.05:
+            #create DataFrame to hold data
+            df = pd.DataFrame({
+                'score': all_pred_PCORRs_byfeat[0][0] + all_pred_PCORRs_byfeat[1][0]+
+                         all_pred_PCORRs_byfeat[0][1] + all_pred_PCORRs_byfeat[1][1]+
+                         all_pred_PCORRs_byfeat[0][2] + all_pred_PCORRs_byfeat[1][2]+
+                         all_pred_PCORRs_byfeat[0][3] + all_pred_PCORRs_byfeat[1][3]
+                         ,
+                'group': np.array(['a'] * len(all_pred_PCORRs_byfeat[0][0] + all_pred_PCORRs_byfeat[1][0]) + 
+                                  ['b'] * len(all_pred_PCORRs_byfeat[0][1] + all_pred_PCORRs_byfeat[1][1]) +
+                                  ['c'] * len(all_pred_PCORRs_byfeat[0][2] + all_pred_PCORRs_byfeat[1][2]) + 
+                                  ['d'] * len(all_pred_PCORRs_byfeat[0][3] + all_pred_PCORRs_byfeat[1][3])
+                                  )
+                }) 
+            # perform Tukey's test
+            tukey = pairwise_tukeyhsd(endog=df['score'],
+                                    groups=df['group'],
+                                    alpha=0.05)
+            #display results
+            print(tukey)
         
-        # todo turkey if necessary
+        # TODO: turkey if necessary
 
         
         # plot distance and rmse grouped by category (a,b,c,d), all dimensions merged
@@ -483,10 +583,17 @@ with open(output_stats_file, 'w') as f:
         # PERFERM STATs TESTS
 
         print("\n\nPERFORMING STATS: VALENCE vs AROUSAL, all categories merged")
+        print("VALENCE normal test:")
+        print("Distance: ", normaltest(list(itertools.chain.from_iterable(all_pred_distances_byfeat[0]))))
+        print("RMSE: ", normaltest(list(itertools.chain.from_iterable(all_pred_RMSEs_byfeat[0]))))
+        print("AROUSAL normal test:")
+        print("Distance: ", normaltest(list(itertools.chain.from_iterable(all_pred_distances_byfeat[1]))))
+        print("RMSE: ", normaltest(list(itertools.chain.from_iterable(all_pred_RMSEs_byfeat[1]))))
+
         print("\nttest")
-        print('Distance: ', ttest_ind(list(itertools.chain.from_iterable(all_pred_distances_byfeat[0])),list(itertools.chain.from_iterable(all_pred_distances_byfeat[1]))))
-        print('RMSE: ', ttest_ind(list(itertools.chain.from_iterable(all_pred_RMSEs_byfeat[0])),list(itertools.chain.from_iterable(all_pred_RMSEs_byfeat[1]))))
-        print('PCORR: ', ttest_ind(list(itertools.chain.from_iterable(all_pred_PCORRs_byfeat[0])),list(itertools.chain.from_iterable(all_pred_PCORRs_byfeat[1]))))
+        print('Distance: ', ttest_ind(list(itertools.chain.from_iterable(all_pred_distances_byfeat[0])),list(itertools.chain.from_iterable(all_rand_distances_byfeat[1]))))
+        print('RMSE: ', ttest_ind(list(itertools.chain.from_iterable(all_pred_RMSEs_byfeat[0])),list(itertools.chain.from_iterable(all_rand_RMSEs_byfeat[1]))))
+        print('PCORR: ', ttest_ind(list(itertools.chain.from_iterable(all_pred_PCORRs_byfeat[0])),list(itertools.chain.from_iterable(all_rand_PCORRs_byfeat[1]))))
 
         # ANOVA per gruppo valence e arousal
         all_pred_distances_val = list(itertools.chain.from_iterable(all_pred_distances_byfeat[0]))
