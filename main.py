@@ -1,3 +1,8 @@
+# Author: Francesco Zumerle
+# code written for thesis: 
+#   Procedural music generation for videogames conditioned through video emotion recognition
+
+
 import numpy as np
 import time
 import tensorflow as tf

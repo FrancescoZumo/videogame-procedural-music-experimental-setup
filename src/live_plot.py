@@ -1,3 +1,8 @@
+# Author: Francesco Zumerle
+# code written for thesis: 
+#   Procedural music generation for videogames conditioned through video emotion recognition
+
+
 import matplotlib.pyplot as plt
 import numpy as np
 from scipy.interpolate import interp1d
