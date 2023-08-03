@@ -19,9 +19,7 @@ The experimental procedure was based on a similar work proposed by Plut et al. :
 
 More details can be found in the thesis manuscript (TODO link once article/thesis is published)
 
-## Usage
-
-### Time series generation
+## Usage: Time series generation
 
 First of all, a tensorflow trained model must be put in `models/model_folder`. 
 
@@ -29,7 +27,7 @@ Then, you must put all the videos you want to analyze at the following path `vid
 
 Finally, you can run `main.py`, that for each video will return a `.csv` file inside the folder `output`.
 
-### emotion annotation interface
+## Usage: emotion annotation interface
 
 This code uses `VLC` media player in order to reproduce the current video.
 
@@ -37,8 +35,7 @@ For beginning the annotation task, the script must be run with the following CLI
 
 For example: `python manual_rank_trace.py valence na1`
 
-### analyze annotations collected and obtain results
-
+## Usage: experimental results analysis
 Apart from the user annotations, which are obtained locally, we download and insert inside `questionnaire_results.csv` all answers to the questionnaire, implemented with Google Form: https://forms.gle/bHahSJvXsnDHw6pd7. 
 
 Our code automatically sorts the randomized order of the videos for each participant.
