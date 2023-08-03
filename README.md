@@ -2,6 +2,14 @@
 
 Code written for my master's thesis: Procedural music generation for videogames conditioned through video emotion recognition. 
 
+Complementary repositories, part of the same project:
+-  [valence-arousal-video-estimation](https://github.com/FrancescoZumo/valence-arousal-video-estimation)
+-  [midi-emotion-primer-continuation](https://github.com/FrancescoZumo/midi-emotion-primer-continuation)
+-  videogame-procedural-music-experimental-setup (current repository)
+
+More details can be found in the thesis manuscript (TODO link once article/thesis is published)
+
+## Description
 This folder contains the code written for the experimental evaluation of the thesis, in particular:
 - `main.py` generates valence-arousal time series for any input `*.mp4` video. requires a tensorflow trained model performing valence-arousal detection
 - `manual_rank_trace.py` provides a simple interface based on RankTrace functionalities for performing the emotion annotation task
