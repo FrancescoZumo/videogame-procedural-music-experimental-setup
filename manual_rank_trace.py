@@ -1,4 +1,3 @@
-import PySimpleGUI as sg
 import numpy as np
 import src.live_plot as live_plot
 import keyboard  # using module keyboard
@@ -46,7 +45,7 @@ def countdown(t):
 
 loop_time = time.time()
 while True:  # making a loop
-    try:  # used try so that if user pressed other than the given key error will not be shown
+    try:  # used try, so that if user pressed other than the given key error will not be shown
         if keyboard.is_pressed('up') or keyboard.is_pressed('down'):  # if key 'q' is pressed 
             if keyboard.is_pressed('up'):
                 current_value = 1

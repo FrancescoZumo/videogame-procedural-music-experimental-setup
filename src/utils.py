@@ -97,41 +97,6 @@ def handler(signum, frame):
     if res == 'y':
         exit(1)
 
-def generate_random_walk_timeseries(step_n, version=0, rand_seed=0):
-    if version == 0:
-        # Define parameters for the walk
-        dims = 1
-        #step_n = 10000
-        #step_set = [-1, 0, 1]
-        step_set = list(np.arange(-1, 1.01, step=0.01))
-        origin = np.zeros((1,dims))
-        
-        # Simulate steps in 1D
-        step_shape = (step_n,dims)
-        steps = np.random.choice(a=step_set, size=step_shape)
-        path = np.concatenate([origin, steps]).cumsum(0)
-        start = path[:1]
-        stop = path[-1:]
-    elif version == 1:
-        rng = np.random.default_rng(rand_seed)
-
-        D = step_n + 1  # Dimension of random walks
-        sections = 1  # Number of sections
-
-        Sigma_path = rng.standard_normal((D, D))
-        Sigma_path = Sigma_path.T.dot(Sigma_path)  # Construct covariance matrix for alpha
-        L_path = cholesky(Sigma_path, lower=True)  # Obtain its Cholesky decomposition
-        # Gaussian random walks:
-        path = np.cumsum(L_path.dot(rng.standard_normal((D, sections))), axis=1).T
-        #path = np.repeat(path, period, axis=0)
-        path = path[0]
-    elif version == 2:
-        origin = np.zeros((1,1))
-        steps = np.random.normal(loc=0,scale=1,size=(step_n, 1))
-        path = np.concatenate([origin, steps]).cumsum(0)
-
-    return path
-
 def process_annotation(name, feat, annotator, subfolder=None, process=True):
     if subfolder is not None:
         curr_path = "output\\annotations\\"+subfolder+"\\"+name+"_"+feat+"_"+annotator+".csv"
@@ -182,7 +147,7 @@ def process_annotation(name, feat, annotator, subfolder=None, process=True):
     return processed_annotation.values.tolist()
 
 
-def compute_metrics(name, feat, annotator, ann_stats, rand_walk_stats, curr_rand_walk, pred_stats, resampling_frequency, rand_walk_length=30, subfolder=None, normalization = None, detrend=False,  threshold_percentile=80, plot_series=False):
+def compute_metrics(name, feat, annotator, ann_stats, pred_stats, resampling_frequency, subfolder=None, normalization = None, detrend=False,  threshold_percentile=80, plot_series=False):
     available_normalizations = [None, 'minmax', 'zscore']
     if normalization not in available_normalizations:
         print("normalization choice not valid: ", normalization, " is not in ", available_normalizations)
@@ -235,21 +200,6 @@ def compute_metrics(name, feat, annotator, ann_stats, rand_walk_stats, curr_rand
         * (pred_stats['max'][0] - pred_stats['min'][0]) + pred_stats['min'][0]
     if detrend:
         curr_prediction_df[feat] = signal.detrend(curr_prediction_df[feat].to_list())
-    
-
-    curr_rand_walk_df = pd.DataFrame(curr_rand_walk, columns=['total_value'])
-
-    if normalization == 'zscore':
-        # z-score normalization
-        curr_rand_walk_df['total_value'] = (curr_rand_walk_df['total_value'] - rand_walk_stats['mean'][0]) / rand_walk_stats['std'][0]
-    elif normalization == 'minmax':
-        # min max normalization (range 0-1)
-        curr_rand_walk_df['total_value'] = \
-            (curr_rand_walk_df['total_value'] - rand_walk_stats['min'][0]) /(rand_walk_stats['max'][0] - rand_walk_stats['min'][0]) \
-            * (pred_stats['max'][0] - pred_stats['min'][0]) + pred_stats['min'][0]
-    if detrend:
-        curr_rand_walk_df['total_value'] = signal.detrend(curr_rand_walk_df['total_value'].to_list())
-
 
 
     # resample to common resampling_frequency for comparison
@@ -271,35 +221,26 @@ def compute_metrics(name, feat, annotator, ann_stats, rand_walk_stats, curr_rand
     if subfolder == 'mean':
         x = curr_prediction_df.index.freq
         curr_annotation_df.index.freq = x
-
-    curr_rand_walk_df['time'] = pd.to_timedelta(np.arange(0, 30 + 30/rand_walk_length, 30/rand_walk_length),'s')
-    curr_rand_walk_df = curr_rand_walk_df.set_index(curr_rand_walk_df['time'])['total_value'].resample(resampling_frequency).ffill()
-
     
     # compute metrics
 
     # DISTANCE_noDTW
     #distance_pred = np.linalg.norm(np.array(curr_annotation_df[0:curr_prediction_df.shape[0]])-np.array(curr_prediction_df))
-    #distance_rand_walk = np.linalg.norm(np.array(curr_annotation_df[0:curr_prediction_df.shape[0]])-np.array(curr_rand_walk_df[0:curr_prediction_df.shape[0]]))
 
     # DISTANCE
     distance_pred = dtw.distance(curr_annotation_df[0:curr_prediction_df.shape[0]], curr_prediction_df)
-    distance_rand_walk = dtw.distance(curr_annotation_df[0:curr_prediction_df.shape[0]], curr_rand_walk_df[0:curr_prediction_df.shape[0]])
     # RMSE
     RMSE_pred = sqrt(mean_squared_error(curr_annotation_df[0:curr_prediction_df.shape[0]], curr_prediction_df))
-    RMSE_rand_walk = sqrt(mean_squared_error(curr_annotation_df[0:curr_prediction_df.shape[0]], curr_rand_walk_df[0:curr_prediction_df.shape[0]]))
     # PEARSON CORRELATION
     pcorr_pred = np.abs(pearsonr(curr_annotation_df[0:curr_prediction_df.shape[0]].to_list(), curr_prediction_df.to_list()))
-    pcorr_rand_walk = np.abs(pearsonr(curr_annotation_df[0:curr_prediction_df.shape[0]].to_list(), curr_rand_walk_df[0:curr_prediction_df.shape[0]].to_list()))
 
     if plot_series:
         p = plt.plot(curr_annotation_df, label='annotator ' + annotator)
         p = plt.plot(curr_prediction_df, label='prediction')
-        p = plt.plot(curr_rand_walk_df, label='random_walk')
         plt.legend()
         plt.show()
 
-    return [distance_pred, distance_rand_walk], [RMSE_pred, RMSE_rand_walk], [pcorr_pred, pcorr_rand_walk]
+    return [distance_pred], [RMSE_pred], [pcorr_pred]
 
 
 def plot_confidence_interval(x, values, z=1.96, color='#2187bb', label='', symbol = 'o',horizontal_line_width=0.1):
@@ -467,25 +408,6 @@ def get_annotations_stats(files_to_use, chosen_feature=None, subfolder=None):
     stats.at[0, 'mean'] = np.mean([np.mean(global_matrix[i]) for i in range(len(global_matrix))])
     stats.at[0, 'normal_test'] = shapiro(list(itertools.chain.from_iterable(global_matrix)))[1]
     return stats
-
-def get_rand_walk_stats(n_gen, step_n, algorithm_version, rand_seed):
-    global_matrix = []
-    stats = pd.DataFrame()
-
-    np.random.seed(rand_seed)
-    multiple_seeds = np.random.randint(10000, size=n_gen)
-
-
-    for i in range(n_gen):
-        path = generate_random_walk_timeseries(step_n, version=algorithm_version, rand_seed=multiple_seeds[i])
-        global_matrix.append(path)
-    
-    stats.at[0, 'min'] = np.min([np.min(global_matrix[i]) for i in range(len(global_matrix))])
-    stats.at[0, 'max'] = np.max([np.max(global_matrix[i]) for i in range(len(global_matrix))])
-    stats.at[0, 'std'] = np.std(list(itertools.chain.from_iterable(global_matrix)))
-    stats.at[0, 'mean'] = np.mean([np.mean(global_matrix[i]) for i in range(len(global_matrix))])
-    stats.at[0, 'normal_test'] = shapiro(list(itertools.chain.from_iterable(global_matrix)))[1]
-    return stats, global_matrix
 
 def get_pred_stats(feats):
     global_matrix = []

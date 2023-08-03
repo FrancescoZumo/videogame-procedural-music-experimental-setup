@@ -10,19 +10,20 @@ import re
 
 
 if __name__ == '__main__':
-    # load model
+
+    # load trainded model (change names accordingly)
     model_name = '3D_CNN_pat100_lr1e-05'
     model = tf.keras.models.load_model('models/' + model_name + '_checkpoint')
     os.environ['TF_CPP_MIN_LOG_LEVEL'] = '2'
 
     # set parameters
-    current_va_path = 'output\\current_va.csv'
+    current_va_path = 'output\\current_va.csv'  # used for scheduling in screen_streaming prediction_mode
 
     videogame_choice = 'no_mans_sky'
     video_max_duration = np.inf
 
     debug = False
-    gpu_scheduling = False
+    gpu_scheduling = False                      # set true for streen_streaming
     prediction_modes = {
         0: 'fixed',
         1: 'from_file',
@@ -45,14 +46,6 @@ if __name__ == '__main__':
     available_videos = os.listdir(videos_folder)
     loop_time = time.time()
     for video in available_videos:
-
-        '''
-        pattern = re.compile("nc*")
-        # skip some videos:
-        if pattern.match(video) is not None:
-            print('skipping ' + video)
-            continue
-        '''
 
         video_filename = video[:len(video)-4]
         video_filename_path = videos_folder + video_filename + '.mp4'
@@ -85,10 +78,8 @@ if __name__ == '__main__':
                     frames = utils.stream_screen(fps=fps, n_of_frames=n_of_frames, debug=debug)
 
                 # convert frames to tensors
-                # print(type(frames[0]))
                 for i, frame in enumerate(frames):
                     frames[i] = utils.format_frames(frame)
-                # print(frames[0].shape)
 
                 frames = np.array(frames)[..., [2, 1, 0]]
                 
@@ -130,12 +121,6 @@ if __name__ == '__main__':
         # rename final file
         final_path = 'output\\' + video_filename + '.csv'
         os.system('move /Y output\\current_va.csv ' + final_path)
-
-        # generate correspondent random walk
-        final_csv = pd.read_csv(final_path)
-        rand_walk = utils.generate_random_walk_timeseries(step_n=final_csv.shape[0])
-        rand_walk_df = pd.DataFrame(rand_walk)
-        rand_walk_df.to_csv('output\\' + video_filename + '_rand_walk.csv')
 
         
 

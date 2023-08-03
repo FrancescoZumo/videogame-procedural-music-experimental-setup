@@ -1,0 +1,228 @@
+
+
+test assumption of normality, dimension: valence, category:  a
+DISTANCE
+the null hypothesis can be rejected
+RMSE
+the null hypothesis CANNOT be rejected
+0.21556711416503202
+PCORR
+the null hypothesis CANNOT be rejected
+0.16795879873319594
+
+
+test assumption of normality, dimension: valence, category:  b
+DISTANCE
+the null hypothesis can be rejected
+RMSE
+the null hypothesis can be rejected
+PCORR
+the null hypothesis CANNOT be rejected
+0.06700565322029288
+
+
+test assumption of normality, dimension: valence, category:  c
+DISTANCE
+the null hypothesis can be rejected
+RMSE
+the null hypothesis can be rejected
+PCORR
+the null hypothesis can be rejected
+
+
+test assumption of normality, dimension: valence, category:  d
+DISTANCE
+the null hypothesis can be rejected
+RMSE
+the null hypothesis can be rejected
+PCORR
+the null hypothesis CANNOT be rejected
+0.3136776166406439
+
+RESULTS: Affective Dimension:  valence
+prediction distances mean:  15.164 & 16.741 & 22.006 & 23.529
+prediction distances SEM:  1.221 & 2.074 & 1.674 & 2.313
+prediction RMSEs mean :  1.006 & 1.113 & 1.37 & 1.46
+prediction RMSEs SEM:  0.07 & 0.129 & 0.096 & 0.13
+prediction PCORRs mean :  0.3 & 0.323 & 0.379 & 0.324
+prediction PCORRs SEM:  0.032 & 0.034 & 0.042 & 0.042
+
+now performing ANOVA for dimension: valence among all categories (a,b,c,d)
+
+one-way ANOVA test for Distance:  F_onewayResult(statistic=4.7107187526386225, pvalue=0.0037290874879130154)
+Multiple Comparison of Means - Tukey HSD, FWER=0.05 
+====================================================
+group1 group2 meandiff p-adj   lower   upper  reject
+----------------------------------------------------
+     a      b   1.5772 0.9299 -5.1922  8.3465  False
+     a      c   6.8417 0.0466  0.0723 13.6111   True
+     a      d   8.3646 0.0102  1.4903 15.2389   True
+     b      c   5.2646 0.1845 -1.5048 12.0339  False
+     b      d   6.7875 0.0543 -0.0869 13.6618  False
+     c      d   1.5229 0.9389 -5.3514  8.3972  False
+----------------------------------------------------
+one-way ANOVA test for RMSE:  F_onewayResult(statistic=3.8421960252321927, pvalue=0.011270076095512054)
+Multiple Comparison of Means - Tukey HSD, FWER=0.05
+===================================================
+group1 group2 meandiff p-adj   lower  upper  reject
+---------------------------------------------------
+     a      b   0.1076  0.894 -0.2882 0.5034  False
+     a      c    0.364 0.0833 -0.0318 0.7598  False
+     a      d   0.4545 0.0199  0.0526 0.8565   True
+     b      c   0.2565  0.335 -0.1393 0.6523  False
+     b      d    0.347 0.1163  -0.055 0.7489  False
+     c      d   0.0905 0.9361 -0.3114 0.4924  False
+---------------------------------------------------
+one-way ANOVA test for PCORR:  F_onewayResult(statistic=0.8040934670395579, pvalue=0.4937608694447808)
+
+
+test assumption of normality, dimension: arousal, category:  a
+DISTANCE
+the null hypothesis CANNOT be rejected
+0.05546014314488376
+RMSE
+the null hypothesis can be rejected
+PCORR
+the null hypothesis CANNOT be rejected
+0.18466375827850987
+
+
+test assumption of normality, dimension: arousal, category:  b
+DISTANCE
+the null hypothesis CANNOT be rejected
+0.26556912205350497
+RMSE
+the null hypothesis CANNOT be rejected
+0.38605707614496104
+PCORR
+the null hypothesis can be rejected
+
+
+test assumption of normality, dimension: arousal, category:  c
+DISTANCE
+the null hypothesis can be rejected
+RMSE
+the null hypothesis can be rejected
+PCORR
+the null hypothesis CANNOT be rejected
+0.06210881689487308
+
+
+test assumption of normality, dimension: arousal, category:  d
+DISTANCE
+the null hypothesis can be rejected
+RMSE
+the null hypothesis can be rejected
+PCORR
+the null hypothesis CANNOT be rejected
+0.5486919680931737
+
+RESULTS: Affective Dimension:  arousal
+prediction distances mean:  14.985 & 16.737 & 18.129 & 15.662
+prediction distances SEM:  1.288 & 1.337 & 1.917 & 1.509
+prediction RMSEs mean :  1.061 & 1.127 & 1.248 & 1.084
+prediction RMSEs SEM:  0.085 & 0.081 & 0.13 & 0.088
+prediction PCORRs mean :  0.275 & 0.329 & 0.317 & 0.369
+prediction PCORRs SEM:  0.034 & 0.046 & 0.036 & 0.036
+
+now performing ANOVA for dimension: arousal among all categories (a,b,c,d)
+
+one-way ANOVA test for Distance:  F_onewayResult(statistic=0.8016347832650669, pvalue=0.49507985767254503)
+one-way ANOVA test for RMSE:  F_onewayResult(statistic=0.7222379523818812, pvalue=0.5404223193722395)
+one-way ANOVA test for PCORR:  F_onewayResult(statistic=1.0392816428832008, pvalue=0.37750436166240187)
+
+
+
+PERFORMING STATS for Dimensions MERGED
+
+
+test assumption of normality, dimensions merged, category:  0
+DISTANCE
+the null hypothesis can be rejected
+RMSE
+the null hypothesis can be rejected
+PCORR
+the null hypothesis can be rejected
+
+test assumption of normality, dimensions merged, category:  1
+DISTANCE
+the null hypothesis can be rejected
+RMSE
+the null hypothesis can be rejected
+PCORR
+the null hypothesis can be rejected
+
+test assumption of normality, dimensions merged, category:  2
+DISTANCE
+the null hypothesis can be rejected
+RMSE
+the null hypothesis can be rejected
+PCORR
+the null hypothesis can be rejected
+
+test assumption of normality, dimensions merged, category:  3
+DISTANCE
+the null hypothesis can be rejected
+RMSE
+the null hypothesis can be rejected
+PCORR
+the null hypothesis CANNOT be rejected
+0.20352939900284628
+
+
+RESULTS: Affective Dimensions merged
+prediction distances mean:  15.074 & 16.739 & 20.067 & 19.476
+prediction distances SEM:  0.881 & 1.225 & 1.285 & 1.439
+prediction RMSEs mean :  1.033 & 1.12 & 1.309 & 1.266
+prediction RMSEs SEM:  0.055 & 0.075 & 0.081 & 0.08
+prediction PCORRs mean :  0.287 & 0.326 & 0.348 & 0.347
+prediction PCORRs SEM:  0.023 & 0.028 & 0.028 & 0.027
+
+now performing ANOVA comparing all categories (a,b,c,d), dimensions merged
+
+one-way ANOVA test for Distance:  F_onewayResult(statistic=3.6981548331990464, pvalue=0.012337703078792325)
+Multiple Comparison of Means - Tukey HSD, FWER=0.05
+===================================================
+group1 group2 meandiff p-adj   lower  upper  reject
+---------------------------------------------------
+     a      b   1.6649 0.7679 -2.7828 6.1127  False
+     a      c   4.9928 0.0208   0.545 9.4406   True
+     a      d   4.4018 0.0563 -0.0796 8.8831  False
+     b      c   3.3279 0.2162 -1.1199 7.7757  False
+     b      d   2.7368 0.3924 -1.7445 7.2182  False
+     c      d  -0.5911 0.9863 -5.0724 3.8903  False
+---------------------------------------------------
+one-way ANOVA test for RMSE:  F_onewayResult(statistic=3.0432994246631333, pvalue=0.02937728692032235)
+Multiple Comparison of Means - Tukey HSD, FWER=0.05
+===================================================
+group1 group2 meandiff p-adj   lower  upper  reject
+---------------------------------------------------
+     a      b   0.0871 0.8346 -0.1805 0.3547  False
+     a      c   0.2756 0.0408   0.008 0.5432   True
+     a      d   0.2331 0.1166 -0.0366 0.5027  False
+     b      c   0.1885 0.2658 -0.0791 0.4561  False
+     b      d    0.146 0.5006 -0.1236 0.4156  False
+     c      d  -0.0425 0.9771 -0.3121 0.2271  False
+---------------------------------------------------
+one-way ANOVA test for PCORR:  F_onewayResult(statistic=1.1470978453418563, pvalue=0.33054385918632373)
+
+
+PERFORMING STATS: VALENCE vs AROUSAL, all categories merged
+VALENCE normal test:
+Distance:  NormaltestResult(statistic=75.55286412203216, pvalue=3.925581605031414e-17)
+RMSE:  NormaltestResult(statistic=84.98866350216696, pvalue=3.507084325585027e-19)
+AROUSAL normal test:
+Distance:  NormaltestResult(statistic=23.335197191111533, pvalue=8.566951591674464e-06)
+RMSE:  NormaltestResult(statistic=37.578332271819704, pvalue=6.917813150951662e-09)
+
+now performing ANOVA
+
+one-way ANOVA test for DISTANCE:  F_onewayResult(statistic=5.6465379303871455, pvalue=0.018192890357738224)
+Multiple Comparison of Means - Tukey HSD, FWER=0.05 
+====================================================
+ group1  group2 meandiff p-adj  lower  upper  reject
+----------------------------------------------------
+arousal valence   2.9197 0.0182 0.5006 5.3388   True
+----------------------------------------------------
+one-way ANOVA test for RMSE:  F_onewayResult(statistic=1.9717830842225001, pvalue=0.1614165312605136)
+one-way ANOVA test for PCORR:  F_onewayResult(statistic=0.1149853000007984, pvalue=0.7348048398730367)
