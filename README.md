@@ -35,4 +35,4 @@ Apart from the user annotations, which are obtained locally, we download and ins
 
 Our code automatically sorts the randomized order of the videos for each participant.
 
-Once all the user annotations have been collected, simply run `process_experiment_results.py`, which returns a `.txt` summary with all the statistical test performed, as well as a few useful `.pdf` plots.
+Once all the user annotations have been collected, simply run `process_experiment_results.py`, which returns a `.txt` summary with all the statistical tests performed, as well as some few useful `.pdf` plots.
