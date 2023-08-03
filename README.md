@@ -1,4 +1,4 @@
-# va-real-time
+# experimental setup and results evaluation
 
 Code written for my master's thesis: Procedural music generation forvideogames conditioned through video emotion recognition
 
