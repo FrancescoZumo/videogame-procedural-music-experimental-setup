@@ -5,7 +5,9 @@ Code written for my master's thesis: Procedural music generation for videogames 
 This folder contains the code written for the experimental evaluation of the thesis, in particular:
 - `main.py` generates valence-arousal time series for any input `*.mp4` video. requires a tensorflow trained model performing valence-arousal detection
 - `manual_rank_trace.py` provides a simple interface based on RankTrace functionalities for performing the emotion annotation task
-- `process_experiment_results.py` compares the annotations collected from participants with the model predictions, generating figures and a `.txt` summarizing the statistical analysis of the results 
+- `process_experiment_results.py` compares the annotations collected from participants with the model predictions, generating figures and a `.txt` summarizing the statistical analysis of the results
+
+The experimental procedure was based on a similar work proposed by Plut et al. : https://dl.acm.org/doi/abs/10.1145/3555858.3555947
 
 More details can be found in the thesis manuscript (TODO link once article/thesis is published)
 
@@ -29,4 +31,8 @@ For example: `python manual_rank_trace.py valence na1`
 
 ### analyze annotations collected and obtain results
 
-In order to 
+Apart from the user annotations, which are obtained locally, we download and insert inside `questionnaire_results.csv` all answers to the questionnaire, implemented with Google Form: https://forms.gle/bHahSJvXsnDHw6pd7. 
+
+Our code automatically sorts the randomized order of the videos for each participant.
+
+Once all the user annotations have been collected, simply run `process_experiment_results.py`, which returns a `.txt` summary with all the statistical test performed, as well as a few useful `.pdf` plots.
