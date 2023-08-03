@@ -1,2 +1,5 @@
 
 *.mp4
+models
+_pycache_
+videos/*
