@@ -1,5 +1,6 @@
 
 *.mp4
-models
-_pycache_
-videos/*
+*.reapeaks
+models/*
+__pycache__
+.idea
