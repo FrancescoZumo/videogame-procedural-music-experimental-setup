@@ -1,4 +1,4 @@
-# experimental setup and results evaluation for videogame generative music system
+# Experimental setup and results evaluation for videogame generative music system
 
 Code written for my master's thesis: Procedural music generation for videogames conditioned through video emotion recognition. 
 
