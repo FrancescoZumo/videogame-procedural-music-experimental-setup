@@ -17,7 +17,7 @@ This folder contains the code written for the experimental evaluation of the the
 
 The experimental procedure was based on a similar work proposed by Plut et al. : https://dl.acm.org/doi/abs/10.1145/3555858.3555947
 
-More details can be found in the thesis manuscript (TODO link once article/thesis is published)
+The videos used for conducting our experimental evaluation are available at this [link](https://www.youtube.com/playlist?list=PLw4IxoxadimNV2-oapulrengf79XCcXNM)
 
 ## Usage: Time series generation
 
