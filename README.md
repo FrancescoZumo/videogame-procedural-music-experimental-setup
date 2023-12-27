@@ -7,8 +7,7 @@ Complementary repositories, part of the same project:
 -  [midi-emotion-primer-continuation](https://github.com/FrancescoZumo/midi-emotion-primer-continuation)
 -  videogame-procedural-music-experimental-setup (current repository)
 
-More details can be found in the [thesis manuscript](https://www.politesi.polimi.it/handle/10589/210809
-)
+More details can be found in the [thesis manuscript](https://www.politesi.polimi.it/handle/10589/210809) and in the [published paper](https://ieeexplore.ieee.org/document/10335439).
 
 ## Description
 This folder contains the code written for the experimental evaluation of the thesis, in particular:
